@@ -1,0 +1,153 @@
+.container{
+    width: 100% !important;
+    flex: 1;
+    /* margin: 0 !important; */
+    /* padding: 0 !important; */
+}
+body{
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    background-color: rgb(241, 243, 245);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.navbar{
+    height: 5rem;
+    background-color: #ffffff;
+    position: sticky !important;
+    top: 0;
+    z-index: 1000;
+}
+
+.fa-compass{
+    color: #fe424d;
+    font-size: 2rem;
+}
+
+.nav-link{
+    color: #222222 !important;
+}
+
+/* Footer styling */
+footer {
+    display: flex;
+    height: 8rem;
+    background-color: #eceff1;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: space-around;
+    text-align: center;
+}
+
+.f-info-socials,
+.f-info-links {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.f-info-socials i {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    cursor: pointer;
+}
+
+.f-info-links a {
+    text-decoration: none;
+    color: #222222;
+}
+
+.f-info-links a:hover {
+    text-decoration: underline;
+}
+
+.f-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    border: none !important;
+    margin-bottom: 3rem;
+}
+
+.card-img-top{
+    border-radius: 1rem !important;
+    object-fit: cover !important;
+    width: 100% !important;
+}
+
+.card-body{
+    padding: 1rem !important;
+}
+
+/* Listing card styling */
+.listing-link {
+    text-decoration: none;
+}
+
+.listing-card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.listing-card .card-img-top {
+    border-radius: 1rem !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.listing-link:hover .listing-card .card-img-top {
+    opacity: 0.8;
+}
+
+.listing-card .card-body {
+    padding: 0.5rem 0 0 0 !important;
+}
+
+.listing-card .card-text {
+    color: #222222;
+}
+
+.card-img-overlay {
+    opacity: 0;
+}
+
+.card-img-overlay:hover {
+    opacity: 0.2;
+    background-color: white;
+    transition: opacity 0.2s;
+}
+
+/* Custom Add/Edit button style */
+.add-btn, .edit-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.add-btn:hover, .edit-btn:hover {
+    background-color: #e03b44 !important;
+}
+
+/* Show Page styling */
+.show-img {
+    height: 30vh;
+    border-radius: 1rem !important;
+    object-fit: cover;
+}
+
+.show-card {
+    border: none !important;
+}
+
+.btns {
+    display: flex;
+}
