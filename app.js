@@ -5,6 +5,8 @@ const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const engine = require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync.js");
+const ExpressError = require("./utils/ExpressError.js");
 
 app.set("view engine","ejs");
 app.set("views", path.join(__dirname,"views"));
@@ -61,25 +63,29 @@ app.get("/listings/:id", async(req,res) =>{
 })
 
 //Create Route
-app.post("/listings" , async(req,res) => {
+app.post("/listings" , wrapAsync(async(req,res,next) => {
+    if(!req.body || !req.body.listing){
+        // 400 bad request -> client ki galti 
+        throw new ExpressError(400,"Please provide a valid listing");
+    }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
-})
+}))
 
 //Edit Route
-app.get("/listings/:id/edit", async(req,res)=>{
+app.get("/listings/:id/edit", wrapAsync(async(req,res,next)=>{
     const {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("listings/edit.ejs", {listing});
-})
+}))
 
 //Update Route
-app.put("/listings/:id", async(req,res)=>{
+app.put("/listings/:id", wrapAsync(async(req,res)=>{
     const {id} = req.params;
     const listing = await Listing.findByIdAndUpdate(id,req.body.listing);
     res.redirect(`/listings/${id}`);
-})
+}))
 
 //Delete Route
 app.delete("/listings/:id", async(req,res)=>{
@@ -91,6 +97,18 @@ app.delete("/listings/:id", async(req,res)=>{
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
+
+
+app.all("*any",(req,res,next)=>{
+    next(new ExpressError(404,"Page Not Found"));
+})
+
+// Error Handling
+app.use((err,req,res,next) => {
+    let {statusCode = 500,message = "Something went wrong"} = err;
+    res.render("listings/error.ejs",{statusCode,message});
+    // res.status(statusCode).send(message);
+})
 
 app.listen(8080, () => {
     console.log("Server is running on port 8080");
