@@ -7,13 +7,15 @@ const methodOverride = require("method-override");
 const engine = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const {listingSchema} = require("./schema.js")
 
 app.set("view engine","ejs");
 app.set("views", path.join(__dirname,"views"));
 app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride("_method"));
+app.use(methodOverride("_method")); 
 app.use(express.static(path.join(__dirname,"/public")));
 app.engine('ejs', engine);        //using ejs mate
+
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -64,10 +66,12 @@ app.get("/listings/:id", async(req,res) =>{
 
 //Create Route
 app.post("/listings" , wrapAsync(async(req,res,next) => {
-    if(!req.body || !req.body.listing){
-        // 400 bad request -> client ki galti 
-        throw new ExpressError(400,"Please provide a valid listing");
-    }
+    let result = listingSchema.validate(req.body);
+
+    // if(!req.body || !req.body.listing){
+    //     // 400 bad request -> client ki galti 
+    //     throw new ExpressError(400,"Please provide a valid listing");
+    // }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
