@@ -7,13 +7,14 @@ const methodOverride = require("method-override");
 const engine = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const {listingSchema} = require("./schema.js")
+const { listingSchema } = require("./schema.js")
 
-app.set("view engine","ejs");
-app.set("views", path.join(__dirname,"views"));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride("_method")); 
-app.use(express.static(path.join(__dirname,"/public")));
+app.use(express.json());
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "/public")));
 app.engine('ejs', engine);        //using ejs mate
 
 
@@ -43,74 +44,76 @@ async function main() {
 //     res.send("Sample saved");
 // });
 
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
+// creating a validation function 
+const validateListing = (req, res, next) => {
+    let { error } = listingSchema.validate(req.body);
+    if (error) {
+        throw new ExpressError(400, error);
+    }
+    next();
+}
 
 //Index Route
-
 app.get("/listings", async (req, res) => {
     const allListings = await Listing.find({});
-    res.render( "listings/index.ejs" , {allListings});
+    res.render("listings/index.ejs", { allListings });
 })
 
 //New Route
-app.get("/listings/new", (req,res) => {
+app.get("/listings/new", (req, res) => {
     res.render("listings/new.ejs");
 })
 // error aarah tha as show route upar tha to /new ko bhi id smajh raha tha browser
 
 //Show Route
-app.get("/listings/:id", async(req,res) =>{
-    const {id} = req.params;
+app.get("/listings/:id", async (req, res) => {
+    const { id } = req.params;
     const listing = await Listing.findById(id);
-    res.render("listings/show.ejs", {listing});
+    res.render("listings/show.ejs", { listing });
 })
 
 //Create Route
-app.post("/listings" , wrapAsync(async(req,res,next) => {
-    let result = listingSchema.validate(req.body);
-
-    // if(!req.body || !req.body.listing){
-    //     // 400 bad request -> client ki galti 
-    //     throw new ExpressError(400,"Please provide a valid listing");
-    // }
+app.post("/listings", validateListing, wrapAsync(async (req, res, next) => {
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
 }))
 
 //Edit Route
-app.get("/listings/:id/edit", wrapAsync(async(req,res,next)=>{
-    const {id} = req.params;
+app.get("/listings/:id/edit", wrapAsync(async (req, res, next) => {
+    const { id } = req.params;
     const listing = await Listing.findById(id);
-    res.render("listings/edit.ejs", {listing});
+    res.render("listings/edit.ejs", { listing });
 }))
 
 //Update Route
-app.put("/listings/:id", wrapAsync(async(req,res)=>{
-    const {id} = req.params;
-    const listing = await Listing.findByIdAndUpdate(id,req.body.listing);
+app.put("/listings/:id", validateListing, wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const listing = await Listing.findByIdAndUpdate(id, req.body.listing);
     res.redirect(`/listings/${id}`);
 }))
 
 //Delete Route
-app.delete("/listings/:id", async(req,res)=>{
-    const {id} = req.params;
+app.delete("/listings/:id", async (req, res) => {
+    const { id } = req.params;
     const listing = await Listing.findByIdAndDelete(id);
     res.redirect(`/listings`);
 })
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
 
 
-app.all("*any",(req,res,next)=>{
-    next(new ExpressError(404,"Page Not Found"));
+app.all("*any", (req, res, next) => {
+    next(new ExpressError(404, "Page Not Found"));
 })
 
 // Error Handling
-app.use((err,req,res,next) => {
-    let {statusCode = 500,message = "Something went wrong"} = err;
-    res.render("listings/error.ejs",{statusCode,message});
+app.use((err, req, res, next) => {
+    let { statusCode = 500, message = "Something went wrong" } = err;
+    res.render("listings/error.ejs", { statusCode, message });
     // res.status(statusCode).send(message);
 })
 
