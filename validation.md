@@ -34,6 +34,28 @@ app.post("/listings" , wrapAsync(async(req,res,next) => {
 
 3rd method -> creating a middleware ->
 ```javascript
+const validateListing = (req, res, next) => {
+    let { error } = listingSchema.validate(req.body);
+    if (error) {
+        throw new ExpressError(400, error);
+    }
+    next();
+}
 
+//Create Route
+app.post("/listings", validateListing, wrapAsync(async (req, res, next) => {
+    const newListing = new Listing(req.body.listing);
+    await newListing.save();
+    res.redirect("/listings");
+}))
+
+
+//Update Route
+app.put("/listings/:id", validateListing, wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const listing = await Listing.findByIdAndUpdate(id, req.body.listing);
+    res.redirect(`/listings/${id}`);
+}))
+```
 
 
