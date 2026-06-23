@@ -7,6 +7,10 @@ const methodOverride = require("method-override");
 const session = require("express-session");  //express sessions
 const flash = require('connect-flash'); // needs express sessions
 
+const passport = require("passport");   
+const localStrategy = require("passport-local");
+const User = require("./models/user.js");
+
 const engine = require("ejs-mate");
 app.use(methodOverride("_method"));
 
@@ -14,8 +18,9 @@ app.use(methodOverride("_method"));
 const ExpressError = require("./utils/ExpressError.js");
 
 //Express Routes
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review.js");
+const listingRouter = require("./routes/listing.js");
+const reviewRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
 
 //Needs for parsing form data from Express
 app.use(express.urlencoded({ extended: true }));
@@ -67,16 +72,34 @@ const sessionOptions = {
 app.use(session(sessionOptions));
 app.use(flash());
 
+//Passport
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new localStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req,res,next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     next();
 })
 
+// app.get("/demouser" , async(req,res) => {
+//     let fakeuser = new User({
+//         email : "student@gmail.com",
+//         username : "delta student"
+//     });
+//     let registeredUser = await User.register(fakeuser,"helloworld"); //helloworld is password
+//     res.send(registeredUser);
+
+// })
+
 
 // Express Routes
-app.use("/listings",listings);
-app.use("/listings/:id/reviews",reviews);
+app.use("/listings",listingRouter);
+app.use("/listings/:id/reviews",reviewRouter);
+app.use("/",userRouter);
 
 
 app.all("*any", (req, res, next) => {
