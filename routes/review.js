@@ -11,37 +11,32 @@ const Listing = require("../models/listing.js"); //models
 const Review = require("../models/review.js");   //models
 const { reviewSchema } = require("../schema.js"); //Validation Schema
 
-
-// creating a validation function 
-const validatereview = (req, res, next) => {
-    let { error } = reviewSchema.validate(req.body);
-    if (error) {
-        throw new ExpressError(400, error);
-    }
-    next();
-}
+const { validatereview, isLoggedIn , isReviewAuther } = require("../middleware.js")
 
 //Create Review Route
-router.post("/",validatereview, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn, validatereview, wrapAsync(async (req, res) => {
     // because of merge params: true we can acces id here 
     const { id } = req.params;
     const listing = await Listing.findById(id);
     const review = new Review(req.body.review);
+
+    review.author = req.user._id;
+
     listing.reviews.push(review);
     await review.save();
     await listing.save();
-    req.flash("success","Review Added Successfully!");
+    req.flash("success", "Review Added Successfully!");
     res.redirect(`/listings/${listing.id}`);
 }))
 
 //Delete Revie Route
-router.delete("/:reviewId", wrapAsync(async (req, res) => {
+router.delete("/:reviewId", isReviewAuther , wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
-    await Listing.findByIdAndUpdate(id,{ $pull : { reviews : reviewId }})  //listing me se remove kiya
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } })  //listing me se remove kiya
     await Review.findByIdAndDelete(reviewId);  //review me se remove kiya
-    req.flash("success","Review Deleted Successfully!");
+    req.flash("success", "Review Deleted Successfully!");
     res.redirect(`/listings/${id}`);
-    
+
 }))
 
 
