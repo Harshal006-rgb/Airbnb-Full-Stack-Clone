@@ -22,6 +22,7 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
+
 //Needs for parsing form data from Express
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -82,6 +83,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req,res,next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
+    res.locals.currUser = req.user;  // currUser->current User 
     next();
 })
 
