@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV != "production") {  // jab tak devlopment me he use dotenv
+    require("dotenv").config();
+}
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -5,6 +9,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 
 const session = require("express-session");  //express sessions
+const { MongoStore } = require("connect-mongo"); //mongo sessions
 const flash = require('connect-flash'); // needs express sessions
 
 const passport = require("passport");   
@@ -38,7 +43,8 @@ app.use(express.static(path.join(__dirname, "/public")));
 
 
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust"
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
     .then(() => {
@@ -47,7 +53,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 
 
@@ -57,9 +63,20 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto : {
+        secret: "mysupersecretstring"
+    },
+    touchAfter : 24 * 3600,
+});
 
+store.on("error" , (err) => {
+    console.log("Error in Mongo Session Store", err);
+});
 
-const sessionOptions = {
+const sessionOptions = {    
+    store,
     secret : "mysupersecretstring",
     resave : false,
     saveUninitialized : true,
@@ -69,6 +86,7 @@ const sessionOptions = {
         httpOnly : true, 
     }
 }
+
 
 app.use(session(sessionOptions));
 app.use(flash());

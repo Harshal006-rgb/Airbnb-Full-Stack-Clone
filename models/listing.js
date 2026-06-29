@@ -9,9 +9,8 @@ const listingSchema = new Schema({
     },
     description: String,
     image: {
-        type: String,
-        default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQn2nmWoa-66Yo5xylQwIiAxtvMrK2pB2l4CA&s",
-        set: (v) => v === "" ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQn2nmWoa-66Yo5xylQwIiAxtvMrK2pB2l4CA&s" : v,
+        url : String,
+        filename : String
     },
     price: Number,
     location: String,
@@ -22,7 +21,7 @@ const listingSchema = new Schema({
             ref: "Review"
         }
     ],
-    owner:{
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }
@@ -30,9 +29,9 @@ const listingSchema = new Schema({
 
 
 //post mongoose middleware 
-listingSchema.post( "findOneAndDelete" , async(listing) =>{
-    if(listing){
-        await Review.deleteMany({_id : {$in : listing.reviews}});
+listingSchema.post("findOneAndDelete", async (listing) => {
+    if (listing) {
+        await Review.deleteMany({ _id: { $in: listing.reviews } });
     }
 })
 
